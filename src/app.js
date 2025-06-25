@@ -2,7 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import urlController from './controllers/urlController.js';
+
+import urlRoutes from './routes/urlRoutes.js';
 
 const app = express();
 
@@ -11,13 +12,13 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 
-// URL kısaltma
-app.post('/api/shorten', urlController.shortenUrl);
 
-// Kısa URL yönlendirme
-app.get('/:code', urlController.redirect);
+app.use('/api', urlRoutes);
 
-// Temel 404
+
+app.use('/', urlRoutes);
+
+
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
