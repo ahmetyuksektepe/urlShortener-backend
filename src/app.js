@@ -2,23 +2,31 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-
-import urlRoutes from './routes/urlRoutes.js';
+import urlController from './controllers/urlController.js';
 
 const app = express();
 
-app.use(helmet());
+
 app.use(cors());
+app.use(helmet({
+  contentSecurityPolicy: false, 
+}));
 app.use(morgan('dev'));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 
-app.use('/api', urlRoutes);
 
+// URL kısaltma
+app.post('/api/shorten', urlController.shortenUrl);
 
-app.use('/', urlRoutes);
+// URL istatistikleri
+app.get('/api/stats/:code', urlController.getStats);
 
+// Kısa URL yönlendirme
+app.get('/:code', urlController.redirect);
 
+// Temel 404
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
