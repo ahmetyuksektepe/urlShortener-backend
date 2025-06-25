@@ -1,44 +1,60 @@
 version: '3.8'
 
 services:
-  app:
-    build: .
-    container_name: urlshortener_app
-    ports:
-      - "3000:3000"
-    depends_on:
-      - postgres
-      - redis
-    environment:
-      - PORT=3000
-      - DB_HOST=postgres
-      - DB_USER=postgres
-      - DB_PASSWORD=12345
-      - DB_NAME=urlShortener
-      - DB_PORT=5432
-    volumes:
-      - .:/app
-    restart: unless-stopped
-
+  # PostgreSQL Database
   postgres:
-    image: postgres:14
-    container_name: urlshortener_postgres
+    image: postgres:15-alpine
+    container_name: url_shortener_db
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 12345
       POSTGRES_DB: urlShortener
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database-init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    restart: always
+    networks:
+      - url_shortener_network
 
+  # Redis Cache (opsiyonel - gelecekte kullanım için)
   redis:
-    image: redis:alpine
-    container_name: urlshortener_redis
+    image: redis:7-alpine
+    container_name: url_shortener_redis
+    restart: unless-stopped
     ports:
       - "6379:6379"
-    restart: always
+    volumes:
+      - redis_data:/data
+    networks:
+      - url_shortener_network
 
+  # Node.js Application
+  app:
+    build: .
+    container_name: url_shortener_app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://postgres:12345@postgres:5432/urlShortener
+      BASE_URL: http://localhost:3000
+      PORT: 3000
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - url_shortener_network
+
+# Volumes
 volumes:
-  pgdata:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+# Networks
+networks:
+  url_shortener_network:
+    driver: bridge 

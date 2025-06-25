@@ -1,18 +1,32 @@
-# Base image
+
 FROM node:18-alpine
 
-# App dizinine geç
+# Çalışma dizini oluştur
 WORKDIR /app
 
-# Paketleri kopyala ve yükle
+# Package dosyalarını kopyala
 COPY package*.json ./
+
+# Bağımlılıkları yükle
 RUN npm install
 
-# Kodları kopyala
+# Uygulama kodlarını kopyala
 COPY . .
 
-# Uygulama 3000 portunda çalışacak
+# Non-root user oluştur (güvenlik için)
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nodeuser -u 1001
+
+# Dosya sahipliğini değiştir
+RUN chown -R nodeuser:nodejs /app
+USER nodeuser
+
+# Port expose et
 EXPOSE 3000
 
-# Uygulama başlat
-CMD ["node", "server.js"]
+# Health check ekle
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3000/api/test || exit 1
+
+# Uygulamayı başlat
+CMD ["node", "server.js"] 
