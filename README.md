@@ -7,10 +7,13 @@ projeyi `docker-compose up --build` ile ayağa kaldırdıktan sonra 3000 portund
  
     /api/shorten
 
-|params|value  |
-|--|--|
-| originalUrl | kısaltılmak istenen link. http(s):// formatıyla başlamalı (req) |
-| customAlias | manuel bir kod verilmek istenirse girilir (optional) |
+
+| parametre | tip |  değer|  
+|--|--|--|--|--|
+|  originalUrl | `string` |  kısaltılmak istenen link. http(s):// formatıyla başlamalı (req)|
+|  customAlias| `string` |   manuel bir kod verilmek istenirse girilir (optional)|
+
+
 
 
 -GET
